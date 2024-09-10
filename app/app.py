@@ -1,17 +1,20 @@
-from flask import Flask, jsonify, send_file
 import boto3
 import random
 import os
 
+from dotenv import load_dotenv
+from flask import Flask, jsonify, send_file
+from io import BytesIO
+
+load_dotenv()
 
 app = Flask(__name__)
-
-
-S3_BUCKET = 'devops-random-cat'
 
 AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
 AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
 AWS_REGION = os.environ['AWS_REGION']
+S3_BUCKET = os.environ['S3_BUCKET']
+
 
 S3_CLIENT = boto3.client(
     's3',
@@ -37,8 +40,13 @@ def get_random_image():
 
     image_object = S3_CLIENT.get_object(Bucket=S3_BUCKET, Key=random_key)
 
-    return image_object
+    image_data = image_object['Body'].read()
+
+    return send_file(BytesIO(image_data), mimetype='image/jpeg')
+
+
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
 
