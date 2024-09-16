@@ -3,12 +3,13 @@ import random
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, send_file
-from io import BytesIO
 
+from io import BytesIO
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse, StreamingResponse
 load_dotenv()
 
-app = Flask(__name__)
+app = FastAPI()
 
 AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
 AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
@@ -23,16 +24,13 @@ S3_CLIENT = boto3.client(
     region_name=AWS_REGION)
 
 
-app = Flask(__name__)
-
-
-@app.route('/random-image', methods=['GET'])
+@app.get('/random-image')
 def get_random_image():
 
     response = S3_CLIENT.list_objects_v2(Bucket=S3_BUCKET)
 
     if 'Contents' not in response:
-        return jsonify({"error": "No images found in the bucket"}), 404
+        return JSONResponse({"error": "No images found in the bucket"}), 404
 
     keys = [obj['Key'] for obj in response['Contents']]
 
@@ -42,11 +40,9 @@ def get_random_image():
 
     image_data = image_object['Body'].read()
 
-    return send_file(BytesIO(image_data), mimetype='image/jpeg')
-
+    return StreamingResponse(BytesIO(image_data), media_type="image/jpeg")
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
-
-
+    import uvicorn
+    uvicorn.run("app:app", host="0.0.0.0", port=5000, workers=4)
