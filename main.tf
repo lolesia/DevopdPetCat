@@ -1,7 +1,8 @@
 provider "aws" {
-  region = "us-east-1"
+  region  = "us-east-1"
 }
 
+# ----- Security Group, Inbound, Outbound rules -----
 resource "aws_security_group" "devops_security_group" {
   description = "launch-wizard-1 created 2024-08-23T10:31:58.701Z"
   name        = "launch-wizard-1"
@@ -35,7 +36,7 @@ resource "aws_security_group_rule" "default_egress" {
   security_group_id = aws_security_group.devops_security_group.id
 }
 
-
+# ----- EC2 instance -----
 resource "aws_instance" "my_instance" {
 
   ami                    = "ami-0e86e20dae9224db8"
@@ -98,6 +99,7 @@ resource "aws_instance" "my_instance" {
   }
 }
 
+# ----- S3 buckets, encryption_configuration, versioning -----
 resource "aws_s3_bucket" "cats_bucket" {
   bucket = "devops-random-cats"
   grant {
@@ -106,25 +108,32 @@ resource "aws_s3_bucket" "cats_bucket" {
       "FULL_CONTROL",
     ]
     type = "CanonicalUser"
-
-  }
-
-  server_side_encryption_configuration {
-    rule {
-      bucket_key_enabled = true
-
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
-    }
-  }
-
-  versioning {
-    enabled    = false
-    mfa_delete = false
   }
 }
 
+resource "aws_s3_bucket_versioning" "cats_bucket_versioning" {
+  bucket = "devops-random-cats"
+
+  versioning_configuration {
+    status = "Disabled"
+  }
+}
+
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "cats_bucket_encryption" {
+  bucket = aws_s3_bucket.cats_bucket.id
+
+  rule {
+    bucket_key_enabled = true
+
+    apply_server_side_encryption_by_default {
+      sse_algorithm     = "AES256"
+      kms_master_key_id = null
+    }
+  }
+}
+
+# ----- ECR repository -----
 resource "aws_ecr_repository" "cat_container_repo" {
 
   image_tag_mutability = "MUTABLE"
@@ -140,22 +149,23 @@ resource "aws_ecr_repository" "cat_container_repo" {
   }
 }
 
+# ----- VPC -----
 resource "aws_vpc" "cat_vpc" {
-    assign_generated_ipv6_cidr_block     = false
-    cidr_block                           = "172.31.0.0/16"
-    enable_dns_hostnames                 = true
-    enable_dns_support                   = true
-    enable_network_address_usage_metrics = false
-    instance_tenancy                     = "default"
+  assign_generated_ipv6_cidr_block     = false
+  cidr_block                           = "172.31.0.0/16"
+  enable_dns_hostnames                 = true
+  enable_dns_support                   = true
+  enable_network_address_usage_metrics = false
+  instance_tenancy                     = "default"
 }
 
-
+# ----- Subnet -----
 resource "aws_subnet" "cat_subnet" {
-    availability_zone_id                           = "use1-az2"
-    cidr_block                                     = "172.31.80.0/20"
-    map_public_ip_on_launch                        = true
-    private_dns_hostname_type_on_launch            = "ip-name"
-    vpc_id                                         = aws_vpc.cat_vpc.id
+  availability_zone_id                = "use1-az2"
+  cidr_block                          = "172.31.80.0/20"
+  map_public_ip_on_launch             = true
+  private_dns_hostname_type_on_launch = "ip-name"
+  vpc_id                              = aws_vpc.cat_vpc.id
 }
 
 
