@@ -41,7 +41,7 @@ resource "aws_instance" "my_instance" {
   ami                    = "ami-0e86e20dae9224db8"
   instance_type          = "t2.micro"
   key_name               = "test_devops"
-  subnet_id              = "subnet-0f0e7d188e79c4d30"
+  subnet_id              = aws_subnet.cat_subnet.id
   vpc_security_group_ids = [aws_security_group.devops_security_group.id]
 
   security_groups = [
@@ -149,5 +149,13 @@ resource "aws_vpc" "cat_vpc" {
     instance_tenancy                     = "default"
 }
 
+
+resource "aws_subnet" "cat_subnet" {
+    availability_zone_id                           = "use1-az2"
+    cidr_block                                     = "172.31.80.0/20"
+    map_public_ip_on_launch                        = true
+    private_dns_hostname_type_on_launch            = "ip-name"
+    vpc_id                                         = aws_vpc.cat_vpc.id
+}
 
 
