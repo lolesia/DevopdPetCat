@@ -2,16 +2,50 @@ provider "aws" {
   region = "us-east-1"
 }
 
+resource "aws_security_group" "devops_security_group" {
+  description = "launch-wizard-1 created 2024-08-23T10:31:58.701Z"
+  name        = "launch-wizard-1"
+  vpc_id      = aws_vpc.cat_vpc.id
+}
+
+resource "aws_security_group_rule" "ssh_ingress" {
+  type              = "ingress"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.devops_security_group.id
+}
+
+resource "aws_security_group_rule" "http_ingress" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.devops_security_group.id
+}
+
+resource "aws_security_group_rule" "default_egress" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.devops_security_group.id
+}
+
+
 resource "aws_instance" "my_instance" {
 
   ami                    = "ami-0e86e20dae9224db8"
   instance_type          = "t2.micro"
   key_name               = "test_devops"
   subnet_id              = "subnet-0f0e7d188e79c4d30"
-  vpc_security_group_ids = ["sg-03f4c38755df47a73"]
+  vpc_security_group_ids = [aws_security_group.devops_security_group.id]
 
   security_groups = [
-    "launch-wizard-1",
+    aws_security_group.devops_security_group.name,
   ]
 
   source_dest_check = true
@@ -105,5 +139,15 @@ resource "aws_ecr_repository" "cat_container_repo" {
     scan_on_push = false
   }
 }
+
+resource "aws_vpc" "cat_vpc" {
+    assign_generated_ipv6_cidr_block     = false
+    cidr_block                           = "172.31.0.0/16"
+    enable_dns_hostnames                 = true
+    enable_dns_support                   = true
+    enable_network_address_usage_metrics = false
+    instance_tenancy                     = "default"
+}
+
 
 
