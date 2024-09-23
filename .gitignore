@@ -2,8 +2,5 @@
 .env
 venv
 /app/__pycache__/
-terraform.tfstate
-terraform.tfstate.backup
-.terraform.lock.hcl
 /.terraform
 test
