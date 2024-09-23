@@ -20,3 +20,9 @@ jobs:
           aws-access-key-id: ${{ vars.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Upload backup terraform files to S3
+        run: |
+          aws s3 cp .terraform.lock.hcl s3://backup-bucket-tf/
+          aws s3 cp terraform.tfstate s3://backup-bucket-tf/
+          aws s3 cp terraform.tfstate.backup s3://backup-bucket-tf/
