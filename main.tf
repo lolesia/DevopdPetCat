@@ -1,5 +1,5 @@
 provider "aws" {
-  region  = "us-east-1"
+  region = "us-east-1"
 }
 
 # ----- Security Group, Inbound, Outbound rules -----
@@ -100,15 +100,9 @@ resource "aws_instance" "my_instance" {
 }
 
 # ----- S3 buckets, encryption_configuration, versioning -----
+
 resource "aws_s3_bucket" "cats_bucket" {
   bucket = "devops-random-cats"
-  grant {
-    id = "1d56aeaa9b88ca08088efdec1f59195c7bbcda4b0a60a4412cca3bb45488565a"
-    permissions = [
-      "FULL_CONTROL",
-    ]
-    type = "CanonicalUser"
-  }
 }
 
 resource "aws_s3_bucket_versioning" "cats_bucket_versioning" {
@@ -132,6 +126,72 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "cats_bucket_encry
     }
   }
 }
+
+resource "aws_s3_bucket_acl" "cat_bucket_acl" {
+  bucket = "devops-random-cats"
+
+  access_control_policy {
+    grant {
+      permission = "FULL_CONTROL"
+
+      grantee {
+        id   = "1d56aeaa9b88ca08088efdec1f59195c7bbcda4b0a60a4412cca3bb45488565a"
+        type = "CanonicalUser"
+      }
+    }
+    owner {
+      display_name = "alesyavaskovith"
+      id           = "1d56aeaa9b88ca08088efdec1f59195c7bbcda4b0a60a4412cca3bb45488565a"
+    }
+  }
+}
+
+# ----- Second Bucket -----
+
+resource "aws_s3_bucket" "terraform_bucket" {
+  bucket = "backup-bucket-tf"
+}
+
+resource "aws_s3_bucket_versioning" "terraform_versioning" {
+  bucket = "backup-bucket-tf"
+
+  versioning_configuration {
+    status = "Disabled"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_bucket_encryption" {
+  bucket = aws_s3_bucket.terraform_bucket.id
+
+  rule {
+    bucket_key_enabled = true
+
+    apply_server_side_encryption_by_default {
+      sse_algorithm     = "AES256"
+      kms_master_key_id = null
+    }
+  }
+}
+
+resource "aws_s3_bucket_acl" "terraform_bucket_acl" {
+  bucket = "backup-bucket-tf"
+
+  access_control_policy {
+    grant {
+      permission = "FULL_CONTROL"
+
+      grantee {
+        id   = "1d56aeaa9b88ca08088efdec1f59195c7bbcda4b0a60a4412cca3bb45488565a"
+        type = "CanonicalUser"
+      }
+    }
+    owner {
+      display_name = "alesyavaskovith"
+      id           = "1d56aeaa9b88ca08088efdec1f59195c7bbcda4b0a60a4412cca3bb45488565a"
+    }
+  }
+}
+
 
 # ----- ECR repository -----
 resource "aws_ecr_repository" "cat_container_repo" {
