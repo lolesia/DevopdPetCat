@@ -21,8 +21,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      - name: Copy Terraform files
+        run: |
+          mkdir -p temp_backup
+          cp .terraform.lock.hcl temp_backup/
+          cp terraform.tfstate temp_backup/
+          cp terraform.tfstate.backup temp_backup/
+
       - name: Upload backup terraform files to S3
         run: |
-          aws s3 cp .terraform.lock.hcl s3://backup-bucket-tf/
-          aws s3 cp terraform.tfstate s3://backup-bucket-tf/
-          aws s3 cp terraform.tfstate.backup s3://backup-bucket-tf/
+          aws s3 cp temp_backup/.terraform.lock.hcl s3://backup-bucket-tf/
+          aws s3 cp temp_backup/terraform.tfstate s3://backup-bucket-tf/
+          aws s3 cp temp_backup/terraform.tfstate.backup s3://backup-bucket-tf/
+
+      - name: Clean up temporary files
+        run: |
+          rm -rf temp_backup/
