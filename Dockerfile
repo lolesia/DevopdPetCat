@@ -8,9 +8,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 RUN apt-get update && apt-get install -y nginx
 
+COPY nginx.conf /etc/nginx/nginx.conf
 COPY app ./app
 COPY .env .
-COPY nginx.conf /etc/nginx/nginx.conf
-EXPOSE 80 5000
 
-CMD ["sh", "-c", "uvicorn app.app:app --host 0.0.0.0 --port 5000 --workers 4 & nginx -g 'daemon off;'"]
+EXPOSE 80
+EXPOSE 5000
+
+CMD ["/bin/sh", "-c", "service nginx start && uvicorn app.app:app --host 0.0.0.0 --port 5000 --workers 4"]
+

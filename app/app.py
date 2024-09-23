@@ -7,9 +7,21 @@ from dotenv import load_dotenv
 from io import BytesIO
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse, StreamingResponse
+from PIL import Image
+from fastapi.responses import HTMLResponse
+
+
+from pathlib import Path
+
+load_dotenv()
+app = FastAPI()
+
+BASE_DIR = Path(__file__).resolve().parent
+TEMPLATE_PATH = BASE_DIR / 'templates' / 'welcome.html'
+
+
 load_dotenv()
 
-app = FastAPI()
 
 AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
 AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
@@ -23,6 +35,12 @@ S3_CLIENT = boto3.client(
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
     region_name=AWS_REGION)
 
+
+@app.get('/')
+def hellow_kitti_page():
+    with open(TEMPLATE_PATH, 'r', encoding='utf-8') as file:
+        html_content = file.read()
+    return HTMLResponse(content=html_content)
 
 @app.get('/random-image')
 def get_random_image():
@@ -40,9 +58,16 @@ def get_random_image():
 
     image_data = image_object['Body'].read()
 
-    return StreamingResponse(BytesIO(image_data), media_type="image/jpeg")
+
+    with Image.open(BytesIO(image_data)) as img:
+        img = img.resize((800, 600))
+        img_byte_arr = BytesIO()
+        img.save(img_byte_arr, format='JPEG', quality=90)
+        img_byte_arr.seek(0)
+
+    return StreamingResponse(img_byte_arr, media_type="image/jpeg")
 
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=5000, workers=4)
+    uvicorn.run("app:app", host="0.0.0.0", port=5000)
