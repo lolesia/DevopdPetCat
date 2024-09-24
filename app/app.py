@@ -1,3 +1,5 @@
+import base64
+
 import boto3
 import random
 import os
@@ -38,12 +40,15 @@ S3_CLIENT = boto3.client(
 
 @app.get('/')
 def hellow_kitti_page():
-    with open(TEMPLATE_PATH, 'r', encoding='utf-8') as file:
+    template_path = BASE_DIR / 'templates' / 'welcome.html'
+
+    with open(template_path, 'r', encoding='utf-8') as file:
         html_content = file.read()
     return HTMLResponse(content=html_content)
 
 @app.get('/random-image')
 def get_random_image():
+    template_path = BASE_DIR / 'templates' / 'random_cats.html'
 
     response = S3_CLIENT.list_objects_v2(Bucket=S3_BUCKET)
 
@@ -65,7 +70,15 @@ def get_random_image():
         img.save(img_byte_arr, format='JPEG', quality=90)
         img_byte_arr.seek(0)
 
-    return StreamingResponse(img_byte_arr, media_type="image/jpeg")
+    image_data_base64 = base64.b64encode(img_byte_arr.getvalue()).decode()
+
+    with open(template_path, 'r', encoding='utf-8') as file:
+        html_content = file.read()
+
+    html_content = html_content.replace("{{ image_data }}", image_data_base64)
+
+    return HTMLResponse(content=html_content)
+
 
 
 if __name__ == '__main__':
