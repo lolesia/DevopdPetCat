@@ -20,4 +20,23 @@ http://http://54.172.220.31:5000/random-image
 http://54.172.220.31:3000/
 ```
 
+# A list of metrics can be seen in the Devops Kitty Cat Dashboard
+- nginx_connections_accepted
+- nginx_connections_active
+- nginx_connections_handled
+- nginx_connections_reading
+- nginx_connections_waiting
+- nginx_connections_writing
+- nginx_http_requests_total
+- nginx_up
 
+
+# Prometheus
+```commandline
+http://54.172.220.31:9090/
+```
+
+# Nginx Exporter
+```commandline
+http://54.172.220.31:9090/
+```
