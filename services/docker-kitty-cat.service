@@ -1,0 +1,14 @@
+# /etc/systemd/system
+
+[Unit]
+Description=Docker Service for Kitty Cat App
+After=docker.service
+Requires=docker.service
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/docker run --rm --name kitty-cat -p 8080:80 -p 5000:5000 058264474873.dkr.ecr.us-east-1.amazonaws.com/devops-kitty-cat
+ExecStop=/usr/bin/docker stop docker-kitty-cat
+
+[Install]
+WantedBy=multi-user.target
