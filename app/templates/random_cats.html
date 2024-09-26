@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAT MEM</title>
+    <style>
+        body {
+            background-color: pink;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        img {
+            border: 2px solid #fff; /* Добавим белую рамку к изображению */
+            border-radius: 10px; /* Закругляем углы изображения */
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: white; /* Цвет фона кнопки */
+            border: none; /* Убираем стандартную рамку кнопки */
+            border-radius: 25px; /* Закругленные углы кнопки */
+            cursor: pointer; /* Курсор руки при наведении */
+            transition: background-color 0.3s; /* Плавный переход цвета */
+        }
+        button:hover {
+            background-color: #f0f0f0; /* Изменяем цвет кнопки при наведении */
+        }
+    </style>
+</head>
+<body>
+    <h1>FUN CATS</h1>
+    <img src="data:image/jpeg;base64,{{ image_data }}" alt="Random Image"/>
+    <button onclick="location.reload();">MORE FUN SWEET CATS</button>
+</body>
+</html>

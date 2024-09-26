@@ -1,0 +1,12 @@
+# /etc/systemd/system
+
+[Unit]
+Description=Nginx Prometheus Exporter
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/nginx-prometheus-exporter -nginx.scrape-uri=http://54.172.220.31:8080/stub_status
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
